@@ -31,10 +31,10 @@ async function main() {
     //
     // Broadcasts the "viewed" message to other microservices.
     //
-	function broadcastViewedMessage(messageChannel, videoPath) {
+	function broadcastViewedMessage(messageChannel, videoPath, id) {
 	    console.log(`Publishing message on "viewed" exchange.`);
 	        
-	    const msg = { videoPath: videoPath };
+	    const msg = { videoPath: videoPath, id: id };
 	    const jsonMsg = JSON.stringify(msg);
 	    messageChannel.publish("viewed", "", Buffer.from(jsonMsg)); // Publishes message to the "viewed" exchange.
 	}
@@ -42,8 +42,27 @@ async function main() {
     const app = express();
 
     app.get("/video", async (req, res) => { // Route for streaming video.
+        let videoPath
+        let id
+        const Videoid = req.query.id; // ?id = number in string format
+        
+        try {
+           id = Number(Videoid);
+        } catch (error) {
+            return res.status(400).send("id must be number.");
+        }
 
-        const videoPath = "./videos/SampleVideo_1280x720_1mb.mp4";
+        if (!id) {
+            return res.status(400).send("Missing video id.");
+        }
+
+        if (id === 1) {
+            videoPath = "./videos/SampleVideo_1280x720_1mb.mp4";
+        } else if (id == 2) {
+            videoPath = "./videos/FDownloader.net-1024300238291630-(1080p).mp4"
+        }
+
+
         const stats = await fs.promises.stat(videoPath);
 
         res.writeHead(200, {
@@ -53,7 +72,7 @@ async function main() {
     
         fs.createReadStream(videoPath).pipe(res);
 
-        broadcastViewedMessage(messageChannel, videoPath); // Sends the "viewed" message to indicate this video has been watched.
+        broadcastViewedMessage(messageChannel, videoPath, id); // Sends the "viewed" message to indicate this video has been watched.
     });
 
     app.listen(PORT, () => {

@@ -71,6 +71,8 @@ async function main() {
 
         // ... ADD YOUR CODE HERE TO PROCESS THE MESSAGE ...
 
+        console.log(`recommendation video ${parsedMsg.id}` )
+
         console.log("Acknowledging message was handled.");
                 
         messageChannel.ack(msg); // If there is no error, acknowledge the message.
